@@ -1,0 +1,40 @@
+{
+  "stocks": [
+    {
+      "symbol": "TSLA",
+      "target": 390.0,
+      "target_sell": 450.0,
+      "name": "TSLA"
+    },
+    {
+      "symbol": "NVDA",
+      "target": 175.0,
+      "target_sell": 200.0,
+      "name": "NVIDIA Corporation"
+    },
+    {
+      "symbol": "RKLB",
+      "target": 70.0,
+      "target_sell": 90.0,
+      "name": "Rocket Lab Corporation"
+    },
+    {
+      "symbol": "NVTS",
+      "target": 7.0,
+      "target_sell": 10.0,
+      "name": "Navitas Semiconductor Corporation"
+    },
+    {
+      "symbol": "MSFT",
+      "target": 300.0,
+      "target_sell": 450.0,
+      "name": "Microsoft Corporation"
+    },
+    {
+      "symbol": "EOSE",
+      "target": 11.0,
+      "target_sell": 19.0,
+      "name": "Eos Energy Enterprises, Inc."
+    }
+  ]
+}

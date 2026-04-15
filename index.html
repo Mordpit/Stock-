@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="ระบบติดตามราคาหุ้นแบบเรียลไทม์ - ตรวจสอบและแจ้งเตือนเมื่อหุ้นถึงราคาเข้าซื้อและราคาเป้าหมาย">
+    <title>Stock Tracker - ระบบติดตามราคาหุ้น</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="app-title">
+                    <h1>Stock Tracker</h1>
+                    <p class="subtitle">ติดตามราคาหุ้นแบบเรียลไทม์</p>
+                </div>
+
+                <div class="header-right">
+                    <div class="currency-ticker" id="currencyTicker">
+                        <div class="currency-item loading">
+                            <span class="currency-pair">USD/THB</span>
+                            <span class="currency-value">...</span>
+                        </div>
+                        <div class="currency-item loading">
+                            <span class="currency-pair">JPY/THB (100¥)</span>
+                            <span class="currency-value">...</span>
+                        </div>
+                        <div class="currency-item loading">
+                            <span class="currency-pair">CNY/THB</span>
+                            <span class="currency-value">...</span>
+                        </div>
+                    </div>
+
+                    <div class="world-clock" id="worldClock">
+                        <div class="clock-item">
+                            <span class="clock-city">BKK</span>
+                            <span class="clock-time" id="time-bkk">--:--</span>
+                        </div>
+                        <div class="clock-item">
+                            <span class="clock-city">NYC</span>
+                            <span class="clock-time" id="time-nyc">--:--</span>
+                        </div>
+                        <div class="clock-item">
+                            <span class="clock-city">BEI</span>
+                            <span class="clock-time" id="time-bei">--:--</span>
+                        </div>
+                        <div class="clock-item">
+                            <span class="clock-city">TYO</span>
+                            <span class="clock-time" id="time-tyo">--:--</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-settings" id="settingsBtn" title="ตั้งค่า Telegram">
+                        &#9881;&#65039;
+                        <span id="telegramStatusDot" class="telegram-dot telegram-dot-inactive"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Add Stock Form -->
+        <section class="add-stock-section">
+            <h2>เพิ่มหุ้นใหม่</h2>
+            <form class="add-stock-form" id="addStockForm">
+                <div class="form-group">
+                    <label for="stockSymbol">สัญลักษณ์หุ้น</label>
+                    <input type="text" id="stockSymbol" placeholder="เช่น AAPL, GOOGL, MSFT" required
+                        autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="targetPrice">ราคาเข้าซื้อ ($)</label>
+                    <input type="number" id="targetPrice" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="targetSellPrice">ราคาเป้าหมาย ($)</label>
+                    <input type="number" id="targetSellPrice" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <button type="submit" class="btn btn-primary">เพิ่มหุ้น</button>
+            </form>
+        </section>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- Stocks List -->
+        <section class="stocks-section">
+            <div class="section-header">
+                <h2>รายการหุ้นที่ติดตาม</h2>
+                <div class="header-controls">
+                    <div class="sort-dropdown">
+                        <button class="sort-dropdown-btn" id="sortDropdownBtn">
+                            <span id="currentSortIcon">⊞</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="sort-dropdown-menu" id="sortDropdownMenu">
+                            <div class="sort-option" data-sort="default" data-icon="⊞">⊞ เรียงตามการเพิ่ม</div>
+                            <div class="sort-option" data-sort="name" data-icon="A-Z">A-Z เรียงตามชื่อ</div>
+                            <div class="sort-option" data-sort="growth" data-icon="↑">↑ หุ้นที่เติบโต</div>
+                            <div class="sort-option" data-sort="decline" data-icon="↓">↓ หุ้นที่ถดถอย</div>
+                        </div>
+                    </div>
+
+                    <div class="sector-dropdown">
+                        <button class="sector-dropdown-btn" id="sectorDropdownBtn">
+                            <!-- <span>🏢</span> -->
+                            <span id="currentSectorLabel">sector</span>
+                            <span>▼</span>
+                        </button>
+                        <div class="sector-dropdown-menu" id="sectorDropdownMenu">
+                            <div class="sector-option active" data-sector="all">ทุกประเภท</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="stocksGrid" class="stocks-grid">
+                <div class="loading">กำลังโหลดข้อมูล</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>แก้ไขหุ้น</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <form id="editStockForm">
+                <input type="hidden" id="editSymbol">
+                <div class="form-group">
+                    <label>ชื่อหุ้น</label>
+                    <input type="text" id="editStockName" readonly>
+                </div>
+                <div class="form-group">
+                    <label>ราคาเข้าซื้อ ($)</label>
+                    <input type="number" id="editTarget" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>ราคาเป้าหมาย ($)</label>
+                    <input type="number" id="editTargetSell" step="0.01" min="0">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" id="modalCancel">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auto-refresh Indicator -->
+    <div class="refresh-indicator" id="refreshIndicator">
+        <span class="refresh-dot"></span>
+        <span id="refreshText">อัพเดทอัตโนมัติ</span>
+    </div>
+
+    <!-- Telegram Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal modal-settings">
+            <div class="modal-header">
+                <h3>&#128172; ตั้งค่าการแจ้งเตือน Telegram</h3>
+                <button class="modal-close" id="settingsModalClose">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="settings-info">
+                    <p>&#128072; วิธีตั้งค่า:</p>
+                    <ol>
+                        <li>สร้าง Bot ผ่าน <a href="https://t.me/BotFather" target="_blank">@BotFather</a> เพื่อรับ <b>Bot Token</b></li>
+                        <li>หา Chat ID ผ่าน <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a></li>
+                        <li>เริ่ม Chat กับ Bot ของคุณก่อน (พิมพ์ /start)</li>
+                    </ol>
+                </div>
+                <form id="telegramSettingsForm">
+                    <div class="form-group">
+                        <label for="telegramBotToken">Bot Token</label>
+                        <input type="text" id="telegramBotToken" placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxyz" autocomplete="off">
+                        <small id="telegramTokenStatus"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="telegramChatId">Chat ID</label>
+                        <input type="text" id="telegramChatId" placeholder="123456789" autocomplete="off">
+                    </div>
+                    <div class="settings-actions">
+                        <button type="button" class="btn btn-secondary" id="telegramTestBtn">
+                            &#128172; ทดสอบส่งข้อความ
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            &#128190; บันทึก
+                        </button>
+                    </div>
+                    <div id="telegramFeedback" class="telegram-feedback" style="display:none;"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
