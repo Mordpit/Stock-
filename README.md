@@ -177,3 +177,4 @@ const REFRESH_INTERVAL = 30000; // เปลี่ยนเป็นมิลล
 สร้างด้วย ❤️ โดยใช้ Python + Flask + yfinance
 # Stock-
 # Stock-
+# Stock-
